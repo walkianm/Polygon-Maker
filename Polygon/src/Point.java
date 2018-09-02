@@ -10,6 +10,8 @@ public class Point extends JLabel{
 		
 	public static ImageIcon selectedIcon;
 	public static ImageIcon deselectedIcon;
+	public static ImageIcon graySelectedIcon;
+	public static ImageIcon grayDeselectedIcon;
 	
 	private double angle;//need to save x and y as well, or done by extension?
 	private boolean set;
@@ -45,7 +47,10 @@ public class Point extends JLabel{
 		selectedIcon = new ImageIcon(getClass().getResource("Images/point-selected.png"));
 		deselectedIcon = new ImageIcon(getClass().getResource("Images/point-unselected.png"));
 		
-		setIcon(deselectedIcon);
+		graySelectedIcon = new ImageIcon(getClass().getResource("Images/gray-point-selected.png"));
+		grayDeselectedIcon = new ImageIcon(getClass().getResource("Images/gray-point-unselected.png"));
+		
+		setIcon(grayDeselectedIcon);
 		
 		this.set = false;
 		this.angle = 0.0;
@@ -60,6 +65,22 @@ public class Point extends JLabel{
 		
 		addMouseListener(new PointListener());
 		this.addMouseMotionListener(new MovementListener());
+	}
+	
+	public void showSelected() {
+		if(this.set) {
+			setIcon(selectedIcon);
+		}else {
+			setIcon(graySelectedIcon);
+		}
+	}
+	
+	public void showDeselected() {
+		if(this.set) {
+			setIcon(deselectedIcon);
+		}else {
+			setIcon(grayDeselectedIcon);
+		}
 	}
 	
 	public void setClockwise(Point cw) {
@@ -167,7 +188,7 @@ public class Point extends JLabel{
 				}
 				gui.hideToggleLock();
 			}else {
-				setIcon(selectedIcon);
+				showSelected();
 				selected = !selected;
 				
 				long nextClick = System.currentTimeMillis();
@@ -177,7 +198,7 @@ public class Point extends JLabel{
 				}
 				lastClicked = nextClick;
 				if(selected) {
-					gui.showToggleLock();
+					gui.showToggleLock(getThis());
 				}else {
 					gui.hideToggleLock();
 				}
@@ -192,7 +213,7 @@ public class Point extends JLabel{
 				return;
 			}			
 			
-			setIcon(selectedIcon);	//Highlight the point
+			showSelected();	//Highlight the point
 			gui.refresh();
 		}
 
@@ -203,7 +224,7 @@ public class Point extends JLabel{
 			}
 			
 			if(!selected) {
-				setIcon(deselectedIcon);	//Remove highlight from point
+				showDeselected();	//Remove highlight from point
 			}
 			gui.refresh();
 		}
@@ -229,7 +250,7 @@ public class Point extends JLabel{
 			
 			if(dragged) {
 				Point p = getThis();
-				Polygon source = gui.getSourcePolygon(p, false);
+				Polygon source = gui.getSourcePolygon(p);
 				
 				if(source != null) {
 					if(source.hasASA()) {
@@ -268,10 +289,10 @@ public class Point extends JLabel{
 	
 	public void setSelected(boolean selected) {
 		if(selected && this.getIcon() == deselectedIcon) {
-			setIcon(selectedIcon);
+			showSelected();
 		}
 		if(!selected && this.getIcon() == selectedIcon) {
-			setIcon(deselectedIcon);
+			showDeselected();
 		}
 		this.selected = selected;
 	}

@@ -8,14 +8,22 @@ public class ErrorMessage extends JFrame{
 	private JButton ok;
 	private JLabel label;
 	private PolygonGUI gui;
+	private int divisor;
 	
 	public ErrorMessage(String message, int x, int y, PolygonGUI gui) {
 		this.gui = gui;
 		gui.setError(true);
 		
 		label = new JLabel(message + "     ");
+
 		ok = new JButton("OK");
 		ok.addActionListener(new ButtonListener());
+		
+		divisor = 1;
+		while(message.indexOf("<br>") != -1) {
+			divisor++;
+			message = message.substring(message.indexOf("<br>") + 3);
+		}
 		
 		JPanel panel = new JPanel();
 		
@@ -32,7 +40,7 @@ public class ErrorMessage extends JFrame{
 		setResizable(false);
 		setLocation(x + 15, y + 10);
 		setTitle("Error!");
-		setSize(message.length() * 5 + 130, 75);
+		setSize(((label.getText().length() * 5) / divisor) + 130, 65 + 10 * divisor);
 		setVisible(true);
 		
 		this.requestFocus();

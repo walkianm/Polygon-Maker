@@ -26,8 +26,10 @@ public class Whiteboard extends JPanel{
 	public void drawLine(Line l, Graphics g) {
 		if(l.getSelected()) {
 			g.setColor(Color.YELLOW);
-		}else {
+		}else if(l.getSet()){
 			g.setColor(Color.BLACK);
+		}else {
+			g.setColor(Color.GRAY);
 		}
 		g.drawLine(l.getClockwise().getX() + gui.getOffset(), l.getClockwise().getY() + gui.getOffset(), 
 				l.getCounterclockwise().getX() + gui.getOffset(), l.getCounterclockwise().getY() + gui.getOffset());

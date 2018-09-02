@@ -10,6 +10,9 @@ public class PolygonGUI extends JFrame {
 	private static final int OFFSET = 12;
 	private static final long serialVersionUID = 1L;
 	
+	private ImageIcon lock;
+	private ImageIcon unlock;
+	
 	private JPanel main = new JPanel(new GridBagLayout());
 	private JPanel top = new JPanel(new GridBagLayout());
 	private JPanel bottom = new JPanel(new GridBagLayout());
@@ -26,7 +29,7 @@ public class PolygonGUI extends JFrame {
 	private JButton extraInstructions = new JButton("How to use");
 	private JButton clearAll = new JButton("Clear All");
 	private JButton connectDots = new JButton("Connect Dots");
-	private JButton toggleLock = new JButton("Toggle Lock");
+	private JButton toggleLock = new JButton();
 	
 	private ArrayList<Polygon> shapes = new ArrayList<Polygon>();
 	private ArrayList<Point> points = new ArrayList<Point>();
@@ -37,7 +40,13 @@ public class PolygonGUI extends JFrame {
 	private boolean editingValue;
 	private boolean error;
 	
+	/** 
+	 * Creates a new PolygonGUI and sets up its components.
+	 */
 	public PolygonGUI() {
+		lock = new ImageIcon(getClass().getResource("Images/lock.png"));
+		unlock = new ImageIcon(getClass().getResource("Images/unlock.png"));
+		
 		whiteboard = new Whiteboard(lines, this);
 		editingValue = false;
 		error = false;
@@ -51,27 +60,56 @@ public class PolygonGUI extends JFrame {
 		recalculate();
 	}
 	
+	/** 
+	 * Sets the value of 'editor' to the provided EditValue GUI
+	 * 
+	 * @param editor
+	 */
 	public void setEditor(EditValueGUI editor) {
 		this.editor = editor;
 	}
 	
+	/** 
+	 * Sets the focus of the user to the editor
+	 */
 	public void showEditor() {
 		editor.getTextField().requestFocus();
 	}
 	
+	/** 
+	 * Returns the dimensions of the whiteboard
+	 * 
+	 * @return
+	 */
 	public Dimension getWhiteboardSize() {
 		return this.whiteboard.getSize();
 	}
 	
+	/** 
+	 * Sets up the text areas that the PolygonGUI uses.
+	 */
 	public void setUpTextAreas() {
 		areaText.setFocusable(false);
 		perimeterText.setFocusable(false);
 	}
 	
+	/** 
+	 * Returns the value of OFFSET, which represents the distance that each point image must be 
+	 * shifted so that it appears at the correct location.
+	 * 
+	 * @return
+	 */
 	public int getOffset() {
 		return OFFSET;
 	}
 	
+	/** 
+	 * Changes the length of Line l so that it matches its set length.
+	 * If direction is true, then it does so in the clockwise direction. If false it does so in the counterclockwise direction.
+	 * 
+	 * @param l
+	 * @param direction
+	 */
 	public void correctLine(Line l, boolean direction) {
 		//direction is clockwise if true, counterclockwise if false
 		
@@ -109,6 +147,13 @@ public class PolygonGUI extends JFrame {
 		}
 	}
 	
+	/** 
+	 * Changes the angle at a point to match the angle it is set to.
+	 * If direction is true, it does so in the clockwise direction. If false, it does so in the counterclockwise direction.
+	 * 
+	 * @param p
+	 * @param direction
+	 */
 	public void correctPoint(Point p, boolean direction) {
 		//direction is clockwise if true, counterclockwise if false
 		
@@ -182,15 +227,23 @@ public class PolygonGUI extends JFrame {
 		}
 	}
 	
-	public Polygon getSourcePolygon(Object start, boolean isLine) {
-		Point p;
-		
-		if(isLine) {
-			p = ((Line) start).getClockwise();
-		}else {
-			p = (Point) start;
-		}
-		
+	/** 
+	 * Returns the Polygon containing the provided line 'l'.
+	 * 
+	 * @param l
+	 * @return
+	 */
+	public Polygon getSourcePolygon(Line l) {
+		return getSourcePolygon(l.getClockwise());
+	}
+	
+	/** 
+	 * Returns the Polygon containing the provided point 'p'.
+	 * 
+	 * @param p
+	 * @return
+	 */
+	public Polygon getSourcePolygon(Point p) {
 		for(Polygon shape : shapes) {
 			if(shape.hasPoint(p)) {
 				return shape;
@@ -200,6 +253,14 @@ public class PolygonGUI extends JFrame {
 		return null;
 	}
 	
+	/** 
+	 * Returns the distance the x component of a point 'moving' needs to shift in order to make line 'l' the proper length, where 'start' is the other endpoint of the line.
+	 * 
+	 * @param moving
+	 * @param l
+	 * @param start
+	 * @return
+	 */
 	private double getXShift(Point moving, Line l, Point start) {
 		double m = l.getSlope();
 		
@@ -218,6 +279,14 @@ public class PolygonGUI extends JFrame {
 		}
 	}
 	
+	/** 
+	 * Returns the distance the y component of a point 'moving' needs to shift in order to make line 'l' the proper length, where 'start' is the other endpoint of the line.
+	 * 
+	 * @param moving
+	 * @param l
+	 * @param start
+	 * @return
+	 */
 	public double getYShift(Point moving, Line l, Point start) {
 		double yPercentage = l.getYPercentage();
 		double lengthChange = l.getLength() - l.calculateLength();
@@ -231,6 +300,7 @@ public class PolygonGUI extends JFrame {
 	
 	/**
 	 * Shifts every point in polygon p by x, y, except point exception.
+	 * 
 	 * @param p Polygon to shift
 	 * @param x
 	 * @param y
@@ -281,10 +351,26 @@ public class PolygonGUI extends JFrame {
 	/**
 	 * Shows the 'Toggle Lock' button.
 	 */
-	public void showToggleLock() {
+	public void showToggleLock(Object o) {
 		c.fill = GridBagConstraints.HORIZONTAL;
 		c.gridx = 2;
 		c.gridy = 0;
+		
+		boolean showUnlock = false;
+		
+		if(o instanceof Line) {
+			Line l = (Line) o;
+			showUnlock = l.getSet();
+		}else if(o instanceof Point) {
+			Point p = (Point) o;
+			showUnlock = p.getSet();
+		}
+		
+		if(showUnlock) {
+			toggleLock.setIcon(unlock);
+		}else {
+			toggleLock.setIcon(lock);
+		}
 		
 		top.add(toggleLock, c);
 		revalidate();
@@ -361,31 +447,57 @@ public class PolygonGUI extends JFrame {
 		main.add(bottom, c);
 	}
 	
+	/**
+	 * Sets up the parameters of the whiteboard.
+	 */
 	private void setUpWhiteBoard() {
 		whiteboard.addMouseListener(new PaneListener());
 	}
 	
+	/**
+	 * Returns the main JPane.
+	 * 
+	 * @return
+	 */
 	private JPanel getMainPane() {
 		return this.main;
 	}
 	
+	/**
+	 * Repaints both the whiteboard and the Polygongui.
+	 */
 	public void refresh() {
 		whiteboard.repaint();
 		repaint();
 	}
 	
+	/**
+	 * Deselects every point.
+	 */
 	public void deselectAllPoints() {
 		for(Point p : points) {
 			p.setSelected(false);
-			p.setIcon(Point.deselectedIcon);
+			p.showDeselected();
 		}
 		hideToggleLock();
 	}
 	
+	/**
+	 * Creates and returns a new Point at the provided x and y coordinates.
+	 * 
+	 * @param x
+	 * @param y
+	 * @return
+	 */
 	private Point makeNewPoint(int x, int y) {
 		return new Point(x, y, this);
 	}
 	
+	/**
+	 * Returns true if there are no Points selected, false otherwise.
+	 * 
+	 * @return
+	 */
 	public boolean noPointsSelected() {
 		for(Point p : points) {
 			if(p.getSelected()) {
@@ -395,6 +507,11 @@ public class PolygonGUI extends JFrame {
 		return true;
 	}
 	
+	/**
+	 * Returns the first Point that is selected, or null if no points are selected.
+	 * 
+	 * @return
+	 */
 	public Point getSelectedPoint() {
 		for(Point p : points) {
 			if(p.getSelected()) {
@@ -404,22 +521,41 @@ public class PolygonGUI extends JFrame {
 		return null;
 	}
 	
+	/**
+	 * Sets all points as being NOT assigned to any Polygon, in preparation for assigning new polygons.
+	 */
 	public void clearAssignedPoints() {
 		for(Point p : points) {
 			p.setAssigned(false);
 		}
 	}
 	
+	/**
+	 * Adds Line 'l' to the list of all lines. Automatically recalculates perimeter and area.
+	 * 
+	 * @param l
+	 */
 	public void addLine(Line l) {
 		lines.add(l);
 		
 		recalculate();
 	}
 	
+	/**
+	 * Returns the list of all Lines on screen.
+	 * 
+	 * @return
+	 */
 	public ArrayList<Line> getLines(){
 		return this.lines;
 	}
 	
+	/**
+	 * Attempts to add another point onto the Polygon 'shape'. Returns true if successful, false otherwise.
+	 * 
+	 * @param shape
+	 * @return
+	 */
 	public boolean addNewPoint(Polygon shape) {
 		Point p = shape.getLastPoint();
 		
@@ -440,6 +576,11 @@ public class PolygonGUI extends JFrame {
 		return false;
 	}
 	
+	/**
+	 * Returns the first point in the list of all points that has not been assigned to a Polygon.
+	 * 
+	 * @return
+	 */
 	public Point firstAvailablePoint() {
 		for(Point p : points) {
 			if(!p.getAssigned()) {
@@ -449,6 +590,11 @@ public class PolygonGUI extends JFrame {
 		return null;
 	}
 	
+	/**
+	 * Returns true if there are any points that have not been assigned to a Polygon, false otherwise.
+	 * 
+	 * @return
+	 */
 	public boolean pointsUnassigned() {
 		for(Point p : points) {
 			if(!p.getAssigned()) {
@@ -458,12 +604,24 @@ public class PolygonGUI extends JFrame {
 		return false;
 	}
 	
+	/**
+	 * Moves the image of the provided point to its actual location.
+	 * 
+	 * @param p
+	 */
 	public void movePoint(Point p) {
 		whiteboard.remove(p);
 		whiteboard.add(p);
 		p.setLocation(p.getX(), p.getY());
 	}
 	
+	/**
+	 * Returns true if the provided x and y coordinates lie along any of the lines.
+	 * 
+	 * @param x
+	 * @param y
+	 * @return
+	 */
 	public boolean onLine(int x, int y) {
 		for(Line l : lines) {
 			if(getDistanceToLine(l, x, y) < 10 && withinLineSegment(l, x, y)) {
@@ -473,6 +631,14 @@ public class PolygonGUI extends JFrame {
 		return false;
 	}
 	
+	/**
+	 * Returns true if the provided x and y coordinates fall between the ends of the Line Segment.
+	 * 
+	 * @param l
+	 * @param x
+	 * @param y
+	 * @return
+	 */
 	public boolean withinLineSegment(Line l, int x, int y) {
 		double a = getDistanceBetweenPoints(x, y, l.getClockwise().getExactX(), l.getClockwise().getExactY());
 		double b = getDistanceBetweenPoints(x, y, l.getCounterclockwise().getExactX(), l.getCounterclockwise().getExactY());
@@ -484,6 +650,13 @@ public class PolygonGUI extends JFrame {
 		return true;
 	}
 	
+	/**
+	 * Returns the Line that is closest to the provided x and y coordinates.
+	 * 
+	 * @param x
+	 * @param y
+	 * @return
+	 */
 	public Line getClosestLine(int x, int y) {
 		double minDistance = Double.MAX_VALUE;
 		double distance;
@@ -501,6 +674,9 @@ public class PolygonGUI extends JFrame {
 		return closest;
 	}
 	
+	/**
+	 * Returns the distance between the coordinates (x, y) and Line l.
+	 */
 	public static double getDistanceToLine(Line l, int x, int y) {
 		double x1 = l.getClockwise().getExactX();	//getting one of the endpoints of our line
 		double y1 = l.getClockwise().getExactY();
@@ -523,6 +699,15 @@ public class PolygonGUI extends JFrame {
 		}
 	}
 	
+	/**
+	 * Returns the distance between points (x1, y1) and (x2, y2).
+	 * 
+	 * @param x1
+	 * @param y1
+	 * @param x2
+	 * @param y2
+	 * @return
+	 */
 	public static double getDistanceBetweenPoints(double x1, double y1, double x2, double y2) {
 		double dx = x2 - x1;
 		double dy = y2 - y1;
@@ -530,22 +715,44 @@ public class PolygonGUI extends JFrame {
 		return Math.sqrt(dx * dx + dy * dy);
 	}
 	
+	/**
+	 * Returns true if a value is currently being edited.
+	 * 
+	 * @return
+	 */
 	public boolean getEditingValue() {
 		return this.editingValue;
 	}
 	
+	/**
+	 * Sets the value of editingValue, which tracks whether or not a value is being edited.
+	 * 
+	 * @param editing
+	 */
 	public void setEditingValue(boolean editing) {
 		this.editingValue = editing;
 	}
 	
+	/**
+	 * Returns true if there is currently an error message on screen.
+	 * 
+	 * @return
+	 */
 	public boolean getError() {
 		return this.error;
 	}
 	
+	/**
+	 * Sets the value of error, which tracks whether or not an error is on screen.
+	 * @param error
+	 */
 	public void setError(boolean error) {
 		this.error = error;
 	}
 	
+	/**
+	 * Removes all lines and points from the whiteboard.
+	 */
 	public void clearAll() {
 		while(lines.size() > 0) {
 			lines.remove(0);
@@ -558,18 +765,24 @@ public class PolygonGUI extends JFrame {
 		refresh();
 	}
 	
+	/**
+	 * Recalculates the perimeter and area of any polygons.
+	 */
 	public void recalculate() {
 		calculateArea();
 		calculatePerimeter();
 	}
 	
+	/**
+	 * Calculates the total area of all the polygons on the whiteboard.
+	 */
 	public void calculateArea() {
 		double area = 0;
 		shapes.clear();
 		
 		clearAssignedPoints();
 		
-		markLonePoints();
+		assignLonePoints();
 		makeNonPolygons();
 		makePolygons();
 		
@@ -584,6 +797,9 @@ public class PolygonGUI extends JFrame {
 		areaText.setText("Area: " + area);
 	}
 	
+	/**
+	 * Assigns every point that is not a part of a completed polygon to a 'partial polygon'.
+	 */
 	public void makeNonPolygons() {
 		Polygon shape;
 		
@@ -600,7 +816,10 @@ public class PolygonGUI extends JFrame {
 		}
 	}
 	
-	public void markLonePoints() {
+	/**
+	 * Sets the value of 'assigned', which tracks whether or not a Point has been assigned to a Polygon, to true for all Points are not connected by any lines.
+	 */
+	public void assignLonePoints() {
 		for(Point p : points) {
 			if(p.getNumLines() == 0) {
 				p.setAssigned(true);
@@ -608,6 +827,10 @@ public class PolygonGUI extends JFrame {
 		}
 	}
 	
+	/**
+	 * Returns the first point in the list that is an endpoint (has only one line connecting to it).
+	 * @return
+	 */
 	public Point getFirstEndpoint() {
 		for(Point p : points) {
 			if(!p.getAssigned() && p.getNumLines() < 2) {
@@ -617,6 +840,11 @@ public class PolygonGUI extends JFrame {
 		return null;
 	}
 	
+	/**
+	 * Returns true if there is an endpoint that has not been assigned.
+	 * 
+	 * @return
+	 */
 	public boolean unassignedEndpoints() {
 		for(Point p : points) {
 			if(!p.getAssigned() && p.getNumLines() < 2) {
@@ -626,22 +854,9 @@ public class PolygonGUI extends JFrame {
 		return false;
 	}
 	
-	public double roundArea(double input) {
-		double remainder = input % 1;
-		
-		if(remainder > 0.75) {
-			remainder = 1;
-		}else if(remainder < 0.75 && remainder > 0.25) {
-			remainder = 0.5;
-		}else if(remainder < 0.25) {
-			remainder = 0;
-		}
-		
-		input = (int) input;
-		
-		return input + remainder;
-	}
-	
+	/**
+	 * Assigns each group of points to a Polygon, then adds that Polygon to the list of all Polygons, 'shapes'.
+	 */
 	public void makePolygons() {
 		Polygon shape;
 		
@@ -656,16 +871,9 @@ public class PolygonGUI extends JFrame {
 		}
 	}
 	
-	public void markPoints(Point p) {
-		p.setAssigned(true);
-		if(p.getClockwise() != null && !p.getClockwise().getAssigned()) {
-			markPoints(p.getClockwise());
-		}
-		if(p.getCounterclockwise() != null && !p.getCounterclockwise().getAssigned()) {
-			markPoints(p.getCounterclockwise());
-		}
-	}
-	
+	/**
+	 * Calculates and displays the total perimeter of all Polygons.
+	 */
 	public void calculatePerimeter() {
 		double perimeter = 0;
 		
@@ -679,10 +887,18 @@ public class PolygonGUI extends JFrame {
 		perimeterText.setText("Perimeter: " + perimeter);
 	}
 	
+	/**
+	 * Creates and displays an InstructionsGUI.
+	 */
 	public void displayInstructions() {
 		new InstructionsGUI(this);
 	}
 	
+	/**
+	 * Returns true if no lines are selected.
+	 * 
+	 * @return
+	 */
 	public boolean noLinesHighlighted() {
 		for(Line l : lines) {
 			if(l.getSelected()) {
@@ -692,6 +908,9 @@ public class PolygonGUI extends JFrame {
 		return true;
 	}
 	
+	/**
+	 * Deselects all lines.
+	 */
 	public void deselectAllLines() {
 		for(Line l : lines) {
 			if(l.getSelected()) {
@@ -701,6 +920,9 @@ public class PolygonGUI extends JFrame {
 		hideToggleLock();
 	}
 	
+	/**
+	 * Removes whatever object is selected from the whiteboard.
+	 */
 	public void deleteSelected() {
 		removeSelectedLines();
 		if(!noPointsSelected()) {
@@ -712,6 +934,9 @@ public class PolygonGUI extends JFrame {
 		refresh();
 	}
 	
+	/**
+	 * Removes the selected point from the whiteboard.
+	 */
 	public void removeSelectedPoint() {
 		Point remove = null;
 		for(Point p : points) {
@@ -733,6 +958,11 @@ public class PolygonGUI extends JFrame {
 		points.remove(remove);
 	}
 	
+	/**
+	 * Removes any lines attached to Point p from the whiteboard.
+	 * 
+	 * @param p
+	 */
 	public void removeNeighboringLines(Point p) {
 		for(int i = 0; i < lines.size(); i++) {
 			if(lines.get(i).getClockwise() == p || lines.get(i).getCounterclockwise() == p) {
@@ -742,6 +972,9 @@ public class PolygonGUI extends JFrame {
 		}
 	}
 	
+	/**
+	 * Removes the selected line from the whiteboard.
+	 */
 	public void removeSelectedLines() {
 		for(int i = 0; i < lines.size(); i++) {
 			if(lines.get(i).getSelected()) {
@@ -757,6 +990,11 @@ public class PolygonGUI extends JFrame {
 		}
 	}
 	
+	/**
+	 * Returns true if there is a Point with exactly one line.
+	 * 
+	 * @return
+	 */
 	public boolean pointWithOneLine() {
 		for(Point p : points) {
 			if(p.getNumLines() == 1) {
@@ -766,6 +1004,11 @@ public class PolygonGUI extends JFrame {
 		return false;
 	}
 	
+	/**
+	 * Returns the first selected line. If no lines are selected, returns null.
+	 * 
+	 * @return
+	 */
 	private Line getSelectedLine() {
 		for(Line l : lines) {
 			if(l.getSelected()) {
@@ -775,16 +1018,35 @@ public class PolygonGUI extends JFrame {
 		return null;
 	}
 	
+	/**
+	 * Toggles whether on not the selected Object is locked in its length or angle.
+	 */
 	public void toggleLock() {
 		if(noPointsSelected()) {
 			Line toggle = getSelectedLine();
-			toggle.setSet(!toggle.getSet());
+			if(!toggle.getSet()) {
+				toggle.setLength(toggle.calculateLength());
+			}else {
+				toggle.setSet(false);
+			}
+			deselectAllLines();
 		}else {
 			Point toggle = getSelectedPoint();
 			toggle.setSet(!toggle.getSet());
+			deselectAllPoints();
+		}
+		
+		if(toggleLock.getIcon() == lock) {
+			toggleLock.setIcon(unlock);
+		}else {
+			toggleLock.setIcon(lock);
 		}
 	}
 	
+	/**
+	 * Connects all points with lines in the order they were added to the world.
+	 * Currently acts suboptimally in circumstances where some lines have been added before connecting all points.
+	 */
 	public void connectDots() {
 		int next;
 		int counter = 0;
@@ -808,6 +1070,11 @@ public class PolygonGUI extends JFrame {
 		refresh();
 	}
 	
+	/**
+	 * Connects the Point at index 'index' in points to the next point with less than two lines.
+	 * 
+	 * @param index
+	 */
 	public void connectToNextAvailablePoint(int index) {
 		int i = index + 1;
 		while(i != index) {
@@ -880,8 +1147,10 @@ public class PolygonGUI extends JFrame {
 					}
 				}else {
 					//No lines are currently highlighted
-					showToggleLock();
-					getClosestLine(m.getX() - OFFSET, m.getY() - OFFSET).clicked(m.getX(), m.getY(), true);
+					Line l = getClosestLine(m.getX() - OFFSET, m.getY() - OFFSET);
+					l.clicked(m.getX(), m.getY(), true);
+					
+					showToggleLock(l);
 				}
 			}else {
 				//we clicked on empty space

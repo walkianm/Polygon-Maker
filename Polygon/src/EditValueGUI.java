@@ -116,17 +116,19 @@ public class EditValueGUI extends JFrame{
 				
 				if(isLine) {
 					line.setLength(newValue);
-					if(gui.getSourcePolygon(line, true).hasASA()) {
+					if(gui.getSourcePolygon(line).hasASA()) {
 						gui.correctLine(line, true);
 					}else {
-						System.out.println("Can't solve yet :(");
+						line.setSet(false);
+						displayCannotSolvePolygon();
 					}
 				}else {
 					point.setAngle(newValue, true);
-					if(gui.getSourcePolygon(point, false).hasASA()) {
+					if(gui.getSourcePolygon(point).hasASA()) {
 						gui.correctPoint(point, true);	
 					}else {
-						System.out.println("Can't solve yet :( 2");
+						point.setSet(false);
+						displayCannotSolvePolygon();
 					}
 				}
 				
@@ -134,8 +136,11 @@ public class EditValueGUI extends JFrame{
 			}else {
 				new ErrorMessage("Please input a decimal value!", getThis().getX(), getThis().getY(), gui);
 			}
-		}
-		
+		}	
+	}
+	
+	private void displayCannotSolvePolygon() {
+		new ErrorMessage("<html>Cannot solve this polygon! Please leave a group of <br>an angle, side, and angle (ASA) unset on each polygon!</html>", getThis().getX(), getThis().getY(), gui);
 	}
 	
 	private boolean validEntry() {
