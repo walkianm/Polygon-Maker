@@ -8,23 +8,26 @@ public class InstructionsGUI extends JFrame{
 	
 	private JPanel background;
 	
-	private String[] text = {"To place a point, simply click somewhere on the screen.", "To highlight a point, click on an existing point.",
-			"To move a point, click and drag the desired point.", "To make a line, highlight the starting point, the click on the ending point.", 
-			"To highlight a line, click on an existing line.", "To delete a line or point, highlight it, then click 'Delete' or 'Backspace'.",
+	private String[] text = {"To place a point, simply click somewhere on the screen.",
+			"To highlight a point, click on an existing point.",
+			"To move a point, click and drag the desired point.",
+			"To make a line, highlight the starting point, the click on the ending point.", 
+			"To highlight a line, click on an existing line.",
+			"To delete a line or point, highlight it, then click 'Delete' or 'Backspace'.",
 			"To remove all lines and points at once, press the 'Clear All' button.", 
-			"To set the size of an angle, double click on the point that makes up that angle.  ", "To set the length of a line, double click on that line.",
-			"To connect a bunch of points at once, press the 'Connect Points' button."};
+			"To set the size of an angle, double click on the point that makes up that angle.",
+			"To set the length of a line, double click on that line.",
+			"To connect a bunch of points at once, press the 'Connect Points' button.",
+			"To lock/unlock the value of a point or line, select your target then click the lock.          "};
 	
-	private ImageIcon[] images = {new ImageIcon(getClass().getResource("Images/create-point.png")),
-			new ImageIcon(getClass().getResource("Images/highlight-point.png")), new ImageIcon(getClass().getResource("Images/move-point.png")),
-			new ImageIcon(getClass().getResource("Images/create-line.png")), new ImageIcon(getClass().getResource("Images/highlight-line.png")),
-			new ImageIcon(getClass().getResource("Images/delete-point.png")), new ImageIcon(getClass().getResource("Images/clear-all.png")),
-			new ImageIcon(getClass().getResource("Images/change-angle.png")), new ImageIcon(getClass().getResource("Images/change-length.png")),
-			new ImageIcon(getClass().getResource("Images/connect-points.png"))};
+	private String[] imageNames = {"create-point", "highlight-point", "move-point", "create-line", "highlight-line", "delete-point", "clear-all", "change-angle",
+			"change-length", "connect-points", "set-point"};
+	
+	private ImageIcon[] images;
 	
 	public InstructionsGUI(PolygonGUI gui) {
 		
-		setSize(700, 480);
+		setSize(700, 500);
 		
 		int x = gui.getLocation().x;
 		int y = gui.getLocation().y;
@@ -33,8 +36,18 @@ public class InstructionsGUI extends JFrame{
 		setVisible(true);
 		setTitle("How to Use Polygon Maker");
 		
+		fillImages();
+		
 		addPanel();
 		addInstructions();
+	}
+	
+	private void fillImages() {
+		images = new ImageIcon[imageNames.length];
+		
+		for(int i = 0; i < images.length; i++) {
+			images[i] = new ImageIcon(getClass().getResource("Images/" + imageNames[i] + ".png"));
+		}
 	}
 	
 	private void addPanel() {
