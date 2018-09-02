@@ -249,38 +249,51 @@ public class Point extends JLabel{
 			}
 			
 			if(dragged) {
-				Point p = getThis();
-				Polygon source = gui.getSourcePolygon(p);
-				
-				if(source != null) {
-					if(source.hasASA()) {
-						Point cw = p.getClockwise();
-						Point ccw = p.getCounterclockwise();
-						
-						Line cwLine = p.getClockwiseLine();
-						Line ccwLine = p.getCounterclockwiseLine();
-						
-						if(p.set) {
-							gui.correctPoint(p, true);
-						}else if(cwLine != null && cwLine.getSet()) {
-							gui.correctLine(cwLine, true);
-						}else if(cw != null && cw.getSet()) {
-							gui.correctPoint(cw, true);
-						}
-						
-						if(ccwLine != null && ccwLine.getSet()) {
-							gui.correctLine(ccwLine, false);
-						}else if(ccw != null && ccw.getSet()){
-							gui.correctPoint(ccw, false);
-						}
-					}else {
-						gui.movePolygon(source, x - startX, y - startY, p);
-					}
-				}
-				gui.movePoints();
+				updatePoint();
 			}
 			gui.refresh();
 		}
+	}
+	
+	public boolean updatePoint() {
+		Point p = getThis();
+		Polygon source = gui.getSourcePolygon(p);
+		
+		if(source != null) {
+			if(source.hasASA()) {
+				Point cw = p.getClockwise();
+				Point ccw = p.getCounterclockwise();
+				
+				Line cwLine = p.getClockwiseLine();
+				Line ccwLine = p.getCounterclockwiseLine();
+				
+				if(p.set) {
+					gui.correctPoint(p, true);
+				}else if(cwLine != null && cwLine.getSet()) {
+					gui.correctLine(cwLine, true);
+				}else if(cw != null && cw.getSet()) {
+					gui.correctPoint(cw, true);
+				}
+				
+				if(ccwLine != null && ccwLine.getSet()) {
+					gui.correctLine(ccwLine, false);
+				}else if(ccw != null && ccw.getSet()){
+					gui.correctPoint(ccw, false);
+				}
+				
+				gui.movePoints();
+				
+				return true;
+			}else {
+				if(dragged) {
+					gui.movePolygon(source, x - startX, y - startY, p);
+					gui.movePoints();
+				}else {
+					new ErrorMessage("<html>Cannot solve this polygon! Please leave a group of <br>an angle, side, and angle (ASA) unset on each polygon!</html>", (int) x, (int) y, gui);
+				}
+			}
+		}
+		return false;
 	}
 	
 	public boolean getSelected() {

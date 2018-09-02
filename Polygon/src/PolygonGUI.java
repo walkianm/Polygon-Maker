@@ -780,11 +780,7 @@ public class PolygonGUI extends JFrame {
 		double area = 0;
 		shapes.clear();
 		
-		clearAssignedPoints();
-		
-		assignLonePoints();
-		makeNonPolygons();
-		makePolygons();
+		assignAllPoints();
 		
 		for(Polygon p : shapes) {
 			if(p.isTruePolygon()) {
@@ -795,6 +791,20 @@ public class PolygonGUI extends JFrame {
 		}
 		
 		areaText.setText("Area: " + area);
+	}
+	
+	/**
+	 * Assigns every point to one of three groups:
+	 * 	Single point
+	 * 	Part of an incomplete polygon
+	 * 	Part of a complete polygon.
+	 */
+	public void assignAllPoints() {
+		clearAssignedPoints();
+		
+		assignLonePoints();
+		makeNonPolygons();
+		makePolygons();
 	}
 	
 	/**
@@ -954,6 +964,8 @@ public class PolygonGUI extends JFrame {
 				break;
 			}
 		}
+		hideToggleLock();
+		
 		whiteboard.remove(remove);
 		points.remove(remove);
 	}
@@ -988,6 +1000,7 @@ public class PolygonGUI extends JFrame {
 				i--;
 			}
 		}
+		hideToggleLock();
 	}
 	
 	/**
@@ -1065,6 +1078,19 @@ public class PolygonGUI extends JFrame {
 		}while(pointWithOneLine() && counter < 2);
 		
 		deselectAllPoints();
+		
+		//Make sure all newly connected points have the correct angle.		
+		assignAllPoints();
+		
+		for(Polygon p : shapes) {
+			for(Point q : p.getPoints()) {
+				if(q.getSet()) {
+					if(!q.updatePoint()){
+						break;
+					}
+				}
+			}
+		}
 		
 		recalculate();
 		refresh();

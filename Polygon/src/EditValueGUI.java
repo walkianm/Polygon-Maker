@@ -124,7 +124,7 @@ public class EditValueGUI extends JFrame{
 					}
 				}else {
 					point.setAngle(newValue, true);
-					if(gui.getSourcePolygon(point).hasASA()) {
+					if(gui.getSourcePolygon(point) == null || gui.getSourcePolygon(point).hasASA()) {
 						gui.correctPoint(point, true);	
 					}else {
 						point.setSet(false);
