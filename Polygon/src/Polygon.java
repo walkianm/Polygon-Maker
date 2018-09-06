@@ -117,12 +117,13 @@ public class Polygon {
 			p = calcArea.points.get(0);
 			Triangle t = new Triangle(p, p.getClockwise(), p.getCounterclockwise(), gui);
 			area += t.getArea();
-			removePoint(0, calcArea);
+			removePoint(calcArea.points.get(0), calcArea);
 			area += negativeSpace(calcArea);
 		}
 		p = calcArea.points.get(0);
 		Triangle t = new Triangle(p, p.getClockwise(), p.getCounterclockwise(), gui);
 		area += t.getArea();
+		
 		return area;
 	}
 	
@@ -134,34 +135,28 @@ public class Polygon {
 			if(p.getAngle() > 180) {
 				Triangle t = new Triangle(p, p.getClockwise(), p.getCounterclockwise(), gui);
 				area -= t.getArea();
-				removePoint(i, calcArea);
-				i = 0;
+				removePoint(calcArea.points.get(i), calcArea);
+				i = -1;
 			}
 		}
 		return area;
 	}
 	
-	public void removePoint(int index, Polygon shape) {
-		int less = index - 1;
-		int more = index + 1;
+	public void removePoint(Point p, Polygon shape) {
+		Point cw = p.getClockwise();
+		Point ccw = p.getCounterclockwise();
 		
-		if(less < 0) {
-			less += shape.points.size();
-		}
-		if(more >= shape.points.size()) {
-			more -= shape.points.size();
-		}
-		shape.points.get(less).setClockwise(shape.points.get(more));
-		shape.points.get(more).setCounterclockWise(shape.points.get(less));
+		cw.setCounterclockWise(ccw);
+		ccw.setClockwise(cw);
 		
-		calculateAngle(shape.points.get(less), true);
-		calculateAngle(shape.points.get(more), true);
+		calculateAngle(cw, true);
+		calculateAngle(ccw, true);
 		
-		shape.points.remove(index);
+		shape.points.remove(p);
 	}
 	
 	public static void calculateAngle(Point p, boolean fullPolygon) {
-		if(p.getNumLines() < 2) {
+		if(p.getClockwise() == null || p.getCounterclockwise() == null) {
 			p.setAngle(0, false);
 			return;
 		}
